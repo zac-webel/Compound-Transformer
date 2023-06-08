@@ -1,0 +1,25 @@
+def code_token(token):
+    return token_index.loc[token_index.token==token]['index'].values[0]
+
+def code_output(output_token):
+    one_hot = [0]*len(token_index)
+    idx = token_index.loc[token_index.token==output_token]['index'].values[0]
+    one_hot[idx] = 1
+    return one_hot
+    
+num_compounds = 100
+
+max_len = 75
+
+for i in range(num_compounds):
+    generated_molecule = '<'
+    stop_tag = False
+    while stop_tag == False:
+        input_tokenized = [[code_token(x) for x in generated_molecule]]
+        input_tokenized = keras.utils.pad_sequences([[code_token(x) for x in generated_molecule]], maxlen=max_len,value=63) 
+        preds = model.predict(input_tokenized,verbose=0)
+        sampled_action = np.random.choice(list(token_index['token']),p=preds[0])
+        if(sampled_action == '>'):
+            stop_tag = True
+        generated_molecule = generated_molecule + sampled_action
+    print(generated_molecule,'\n')
